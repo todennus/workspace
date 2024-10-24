@@ -1,0 +1,12 @@
+[submodule "backend"]
+	path = backend
+	url = git@github.com:todennus/backend.git
+	branch = dev
+[submodule "idp"]
+	path = idp
+	url = git@github.com:todennus/idp.git
+	branch = dev
+[submodule "migration"]
+	path = migration
+	url = git@github.com:todennus/migration.git
+	branch = dev

@@ -1,0 +1,207 @@
+services:
+  postgresql:
+    container_name: postgresql
+    image: postgres:12
+    command: -p 5433
+    restart: always
+    environment:
+      - POSTGRES_DB=todennus
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    expose:
+      - 5433
+    networks:
+      - POSTGRES
+      - PG_ADMIN
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@todennus.com
+      - PGADMIN_DEFAULT_PASSWORD=123456
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - 5050:80
+    networks:
+      - PG_ADMIN
+    depends_on:
+      - postgresql
+
+  redis:
+    container_name: redis
+    image: redis:6.2-alpine
+    restart: always
+    command: --port 6380
+    expose:
+      - 6380
+    volumes:
+      - redis:/data
+    networks:
+      - REDIS
+
+  todennus-migration:
+    container_name: todennus-migration
+    image: todennus/migration:latest
+    command: "--postgres"
+    environment:
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
+      - POSTGRES_LOGLEVEL=1
+      - POSTGRES_RETRY_ATTEMPTS=3
+      - POSTGRES_RETRY_INTERVAL=5
+    networks:
+      - POSTGRES
+    depends_on:
+      - postgresql
+
+  todennus-backend:
+    container_name: todennus-backend
+    image: todennus/backend:latest
+    command: rest
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_NODEID=0
+      - SERVER_LOGLEVEL
+      - SERVER_REQUEST_TIMEOUT
+
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
+      - POSTGRES_LOGLEVEL=1
+      - POSTGRES_RETRY_ATTEMPTS=3
+      - POSTGRES_RETRY_INTERVAL=5
+
+      - REDIS_DB=0
+      - REDIS_USERNAME=
+      - REDIS_PASSWORD=
+      - REDIS_ADDR=redis:6380
+
+      - AUTH_TOKEN_RSA_PRIVATE_KEY
+      - AUTH_TOKEN_RSA_PUBLIC_KEY
+      - AUTH_TOKEN_HMAC_SECRET_KEY
+      - AUTH_ACCESS_TOKEN_EXPIRATION
+      - AUTH_REFRESH_TOKEN_EXPIRATION
+      - AUTH_ID_TOKEN_EXPIRATION
+      - AUTH_TOKEN_ISSUER
+
+      - OAUTH2_IDP_SECRET
+      - OAUTH2_IDP_LOGIN_URL
+      - OAUTH2_CLIENT_SECRET_LENGTH
+      - OAUTH2_AUTHORIZATION_CODE_FLOW_EXPIRATION
+      - OAUTH2_LOGIN_RESULT_EXPIRATION
+      - OAUTH2_LOGIN_UPDATE_EXPIRATION
+      - OAUTH2_CONSENT_SESSION_EXPIRATION
+      - OAUTH2_CONSENT_EXPIRATION
+
+      - SESSION_EXPIRATION
+      - SESSION_AUTHENTICATION_KEY
+      - SESSION_ENCRYPTION_KEY
+    networks:
+      - POSTGRES
+      - REDIS
+      - TODENNUS
+    depends_on:
+      - postgresql
+      - todennus-migration
+
+  todennus-backend-rpc:
+    container_name: todennus-backend-rpc
+    image: todennus/backend:latest
+    command: grpc
+    restart: always
+    expose:
+      - 8081
+    ports:
+      - 8081:8081
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8081
+      - SERVER_NODEID=1
+      - SERVER_LOGLEVEL
+      - SERVER_REQUEST_TIMEOUT
+
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
+      - POSTGRES_LOGLEVEL=1
+      - POSTGRES_RETRY_ATTEMPTS=3
+      - POSTGRES_RETRY_INTERVAL=5
+
+      - REDIS_DB=0
+      - REDIS_USERNAME=
+      - REDIS_PASSWORD=
+      - REDIS_ADDR=redis:6380
+
+      - AUTH_TOKEN_RSA_PRIVATE_KEY
+      - AUTH_TOKEN_RSA_PUBLIC_KEY
+      - AUTH_TOKEN_HMAC_SECRET_KEY
+      - AUTH_ACCESS_TOKEN_EXPIRATION
+      - AUTH_REFRESH_TOKEN_EXPIRATION
+      - AUTH_ID_TOKEN_EXPIRATION
+      - AUTH_TOKEN_ISSUER
+
+      - OAUTH2_IDP_SECRET
+      - OAUTH2_IDP_LOGIN_URL
+      - OAUTH2_CLIENT_SECRET_LENGTH
+      - OAUTH2_AUTHORIZATION_CODE_FLOW_EXPIRATION
+      - OAUTH2_LOGIN_RESULT_EXPIRATION
+      - OAUTH2_LOGIN_UPDATE_EXPIRATION
+      - OAUTH2_CONSENT_SESSION_EXPIRATION
+      - OAUTH2_CONSENT_EXPIRATION
+
+      - SESSION_EXPIRATION
+      - SESSION_AUTHENTICATION_KEY
+      - SESSION_ENCRYPTION_KEY
+    networks:
+      - POSTGRES
+      - REDIS
+      - TODENNUS
+    depends_on:
+      - postgresql
+      - todennus-migration
+
+  todennus-idp:
+    container_name: todennus-idp
+    image: todennus/idp:latest
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      - USER_VALIDATION_API=http://todennus-backend:8080/users/validate
+      - USER_VALIDATION_GRPC=todennus-backend-rpc:8081
+      - TODENNUS_AUTH_CALLBACK_URL=http://todennus-backend:8080/auth/callback
+      - TODENNUS_SESSION_UPDATE_URL=http://localhost:8080/session/update
+      - TODENNUS_IDP_SECRET=${OAUTH2_IDP_SECRET}
+    networks:
+      - TODENNUS
+
+  todennus-swagger:
+    container_name: todennus-swagger
+    image: todennus/backend:latest
+    command: swagger
+    restart: always
+    ports:
+      - 8084:8083
+
+volumes:
+  postgresql:
+    name: todennus_postgresql
+  pgadmin:
+    name: todennus_pgadmin
+  redis:
+    name: todennus_redis
+
+networks:
+  PG_ADMIN:
+    name: PG_ADMIN
+  POSTGRES:
+    name: POSTGRES
+  REDIS:
+    name: REDIS
+  TODENNUS:
+    name: TODENNUS
