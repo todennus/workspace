@@ -1,6 +1,6 @@
-[submodule "backend"]
-	path = backend
-	url = git@github.com:todennus/backend.git
+[submodule "oauth2-service"]
+	path = oauth2-service
+	url = git@github.com:todennus/oauth2-service.git
 	branch = dev
 [submodule "idp"]
 	path = idp
@@ -9,4 +9,12 @@
 [submodule "migration"]
 	path = migration
 	url = git@github.com:todennus/migration.git
+	branch = dev
+[submodule "docs"]
+	path = docs
+	url = git@github.com:todennus/docs.git
+	branch = dev
+[submodule "user-service"]
+	path = user-service
+	url = git@github.com:todennus/user-service.git
 	branch = dev

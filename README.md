@@ -9,10 +9,7 @@ Install [Docker](https://docs.docker.com/engine/install/).
 1. Initialize repositories.
 
 ```shell
-$ git clone https://github.com/todennus/workspace
-$ cd workspace
-workspace$ git submodule init
-workspace$ git submodule update --remote --merge
+make submodule
 ```
 
 2. You need to setup environment variables at `.env` (or using `export` command). Please refer the [.env.example](./.env.example).
@@ -20,13 +17,13 @@ workspace$ git submodule update --remote --merge
 3. Build docker images.
 
 ```shell
-workspace$ make docker-build-all
+make docker-build-all
 ```
 
 4. Start docker compose.
 
 ```shell
-workspace$ make quick-start
+make quick-start
 ```
 
 ## Development environment
@@ -37,21 +34,27 @@ Install [Golang 1.23](https://go.dev/doc/install).
 ### Clone all repositories
 
 ```shell
-$ git clone https://github.com/todennus/workspace
-$ git clone https://github.com/todennus/backend
-$ git clone https://github.com/todennus/idp
-$ git clone https://github.com/todennus/migration
-$ git clone https://github.com/todennus/config
-$ git clone https://github.com/todennus/x
+git clone https://github.com/todennus/workspace
+git clone https://github.com/todennus/docs
+git clone https://github.com/todennus/oauth2-service
+git clone https://github.com/todennus/user-service
+git clone https://github.com/todennus/idp
+git clone https://github.com/todennus/migration
+git clone https://github.com/todennus/proto
+git clone https://github.com/todennus/shared
+git clone https://github.com/todennus/x
 ```
 
 ### Setup go workspace
 
 ```shell
-$ go work init ./backend
-$ go work use ./migration
-$ go work use ./config
-$ go work use ./x
+go work init docs
+go work use oauth2-service
+go work use user-service
+go work use migration
+go work use shared
+go work use proto
+go work use x
 ```
 
 ### Copy makefile
@@ -59,4 +62,43 @@ $ go work use ./x
 ```shell
 $ cd workspace
 workspace$ cp workspace.Makefile ../Makefile
+```
+
+## First Use
+
+1. Create the first user. The first registered user is always admininistrator.
+
+```
+POST /users
+
+{
+  "username": "admin",
+  "password": "P@ssw0rd"
+}
+```
+
+2. Create the first OAuth2 Client. This API Endpoint will be blocked after the
+first client is created.
+
+```
+POST /oauth2_clients/first
+
+{
+  "name": "Admin Client",
+  "is_confidential": true,
+  "username": "admin",
+  "password": "P@ssw0rd"
+}
+```
+
+3. You can use the OAuth2 flow now.
+
+```
+POST /oauth2/token
+
+grant_type=password&
+client_id=CLIENT_ID&
+client_secret=CLIENT_SECRET&
+username=admin&
+password=P@ssw0rd
 ```
