@@ -18,3 +18,7 @@
 	path = user-service
 	url = git@github.com:todennus/user-service.git
 	branch = dev
+[submodule "oauth2-client-service"]
+	path = oauth2-client-service
+	url = git@github.com:todennus/oauth2-client-service.git
+	branch = dev
