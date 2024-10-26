@@ -37,6 +37,7 @@ Install [Golang 1.23](https://go.dev/doc/install).
 git clone https://github.com/todennus/workspace
 git clone https://github.com/todennus/docs
 git clone https://github.com/todennus/oauth2-service
+git clone https://github.com/todennus/oauth2-client-service
 git clone https://github.com/todennus/user-service
 git clone https://github.com/todennus/idp
 git clone https://github.com/todennus/migration
@@ -50,6 +51,7 @@ git clone https://github.com/todennus/x
 ```shell
 go work init docs
 go work use oauth2-service
+go work use oauth2-client-service
 go work use user-service
 go work use migration
 go work use shared
