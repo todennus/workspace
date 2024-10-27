@@ -30,4 +30,4 @@ quick-start-down:
 	docker compose -f quick-start.yaml down
 
 submodule:
-	git submodule update --init --remote --recursive --merge 
+	git submodule update --init --remote --merge 
