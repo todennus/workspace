@@ -21,7 +21,8 @@ docker-build-all: \
 	docker-build-user-service \
 	docker-build-oauth2-service \
 	docker-build-oauth2-client-service \
-	docker-build-migration docker-build-idp
+	docker-build-migration \
+	docker-build-idp
 
 quick-start:
 	docker compose --env-file .env -f quick-start.yaml up -d
@@ -29,5 +30,14 @@ quick-start:
 quick-start-down:
 	docker compose -f quick-start.yaml down
 
-submodule:
+submodule-clone:
+	git submodule update --init --recursive
+
+submodule-update:
 	git submodule update --init --remote --merge 
+
+seed-user:
+	docker exec todennus-user-service /service cli seed -u $(username) -p $(password)
+
+seed-client:
+	docker exec todennus-user-service /service cli seed -u $(userid)

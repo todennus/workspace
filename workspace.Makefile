@@ -1,5 +1,5 @@
 docker-build-docs:
-	cd docs && make docker-build
+	docker build -t todennus/docs -f ./docs/build/package/workspace.Dockerfile .
 
 docker-build-oauth2-service:
 	docker build -t todennus/oauth2-service -f ./oauth2-service/build/package/workspace.Dockerfile .
@@ -21,10 +21,17 @@ docker-build-all: \
 	docker-build-user-service \
 	docker-build-oauth2-service \
 	docker-build-oauth2-client-service \
-	docker-build-migration docker-build-idp
+	docker-build-migration \
+	docker-build-idp
 
 quick-start:
 	docker compose -f workspace/workspace.quick-start.yaml up -d
 
 quick-start-down:
 	docker compose -f workspace/workspace.quick-start.yaml down
+
+seed-user:
+	docker exec todennus-user-service /service cli seed --env "" -u $(username) -p $(password)
+
+seed-client:
+	docker exec todennus-user-service /service cli seed --env "" -u $(userid)

@@ -63,6 +63,8 @@ services:
       - TODENNUS_AUTH_CALLBACK_URL=http://todennus-oauth2-service:8080/auth/callback
       - TODENNUS_AUTH_UPDATE_URL=http://localhost:8080/auth/update
       - TODENNUS_IDP_SECRET=${OAUTH2_IDP_SECRET}
+      - SERVICE_TOKEN_HOST=http://todennus-oauth2-service:8080
+      - SERVICE_TOKEN_PATH=/oauth2/token
     networks:
       - TODENNUS
 
@@ -104,6 +106,8 @@ services:
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
 
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_CLIENT_ID
       - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
       - SERVICE_OAUTH2_CLIENT_GRPC_ADDR=todennus-oauth2-client-service-rpc:8080
 
@@ -228,6 +232,9 @@ services:
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
 
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_CLIENT_ID
+      - SERVICE_CLIENT_SECRET
       - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
 
       - OAUTH2_CLIENT_SECRET_LENGTH
@@ -268,6 +275,9 @@ services:
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
 
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_CLIENT_ID
+      - SERVICE_CLIENT_SECRET
       - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
 
       - OAUTH2_CLIENT_SECRET_LENGTH

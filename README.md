@@ -9,7 +9,7 @@ Install [Docker](https://docs.docker.com/engine/install/).
 1. Initialize repositories.
 
 ```shell
-make submodule
+make submodule-clone
 ```
 
 2. You need to setup environment variables at `.env` (or using `export` command). Please refer the [.env.example](./.env.example).
@@ -20,7 +20,26 @@ make submodule
 make docker-build-all
 ```
 
-4. Start docker compose.
+4. For the first time you start the system, please seed the first Admin User and Admin Client.
+
+```shell
+# Seed the Admin User and store the User ID.
+make seed-user username=<your-username> password=<your-password>
+```
+
+```shell
+# Use Admin User ID in previous command to create the first Admin Client.
+make seed-client userid=<admin-user-id>
+```
+
+Then copy the ClientID and ClientSecret into .env file.
+
+```
+SERVICE_CLIENT_ID=<client-id>
+SERVICE_CLIENT_SECRET=<client-secret>
+```
+
+5. Start docker compose.
 
 ```shell
 make quick-start
@@ -30,6 +49,8 @@ make quick-start
 
 
 Install [Golang 1.23](https://go.dev/doc/install).
+
+Create a directory called `todennus`, then run these following commands:
 
 ### Clone all repositories
 
@@ -46,7 +67,7 @@ git clone https://github.com/todennus/shared
 git clone https://github.com/todennus/x
 ```
 
-### Setup go workspace
+### Setup Golang workspace
 
 ```shell
 go work init docs
@@ -62,45 +83,43 @@ go work use x
 ### Copy makefile
 
 ```shell
-$ cd workspace
-workspace$ cp workspace.Makefile ../Makefile
+cp workspace/workspace.Makefile ./Makefile
 ```
 
-## First Use
+### Setup environment
 
-1. Create the first user. The first registered user is always admininistrator.
+Setup `.env` file at each repository, refer `.env.example` file in that repository.
 
-```
-POST /users
+### Start system
 
-{
-  "username": "admin",
-  "password": "P@ssw0rd"
-}
-```
+1. Build docker images.
 
-2. Create the first OAuth2 Client. This API Endpoint will be blocked after the
-first client is created.
-
-```
-POST /oauth2_clients/first
-
-{
-  "name": "Admin Client",
-  "is_confidential": true,
-  "username": "admin",
-  "password": "P@ssw0rd"
-}
+```shell
+make docker-build-all
 ```
 
-3. You can use the OAuth2 flow now.
+2. For the first time you start the system, please seed the first Admin User and Admin Client.
+
+```shell
+# Seed the Admin User and store the User ID.
+make seed-user username=<your-username> password=<your-password>
+```
+
+```shell
+# Use Admin User ID in previous command to create the first Admin Client.
+make seed-client userid=<admin-user-id>
+```
+
+Then copy the ClientID into `./oauth2-service/.env` file. `oauth2-service` has a mechanism to self-authenticate, it only needs the ClientID to generate an authentic token.
 
 ```
-POST /oauth2/token
+SERVICE_CLIENT_ID=<client-id>
+```
 
-grant_type=password&
-client_id=CLIENT_ID&
-client_secret=CLIENT_SECRET&
-username=admin&
-password=P@ssw0rd
+3. You can use the above ClientID and ClientSecret to setup authentication of other services (such as `oauth2-client-service`) or create new Admin Clients and uses theirs credentials for each service.
+
+4. Start docker compose.
+
+```shell
+make quick-start
 ```
