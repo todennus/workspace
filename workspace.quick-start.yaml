@@ -45,9 +45,27 @@ services:
     networks:
       - REDIS
 
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    expose:
+      - 9000
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      - MINIO_ROOT_USER=root
+      - MINIO_ROOT_PASSWORD=12345678
+    volumes:
+      - minio:/data
+    networks:
+      - MINIO
+
   todennus-docs:
     container_name: todennus-docs
     image: todennus/docs:latest
+    command: swagger
     restart: always
     ports:
       - 8888:8080
@@ -139,6 +157,9 @@ services:
       - REDIS_USERNAME=
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
+
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_FILE_GRPC_ADDR=todennus-file-service-rpc:8080
     networks:
       - POSTGRES
       - REDIS
@@ -169,6 +190,9 @@ services:
       - REDIS_USERNAME=
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
+
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_FILE_GRPC_ADDR=todennus-file-service-rpc:8080
     networks:
       - POSTGRES
       - REDIS
@@ -189,9 +213,7 @@ services:
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8080
-      - SERVER_NODEID=0
-      - SERVER_LOGLEVEL
-      - SERVER_REQUEST_TIMEOUT
+      - SERVER_NODEID=3
 
       - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
       - POSTGRES_LOGLEVEL=1
@@ -227,9 +249,7 @@ services:
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8080
-      - SERVER_NODEID=0
-      - SERVER_LOGLEVEL
-      - SERVER_REQUEST_TIMEOUT
+      - SERVER_NODEID=4
 
       - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
       - POSTGRES_LOGLEVEL=1
@@ -251,6 +271,80 @@ services:
       - postgresql
       - todennus-migration
 
+  todennus-file-service:
+    container_name: todennus-file-service
+    image: todennus/file-service:latest
+    command: rest
+    restart: always
+    ports:
+      - 8085:8080
+    env_file:
+      - ../file-service/.env
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_NODEID=5
+
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
+      - POSTGRES_LOGLEVEL=1
+      - POSTGRES_RETRY_ATTEMPTS=3
+      - POSTGRES_RETRY_INTERVAL=5
+
+      - REDIS_DB=0
+      - REDIS_USERNAME=
+      - REDIS_PASSWORD=
+      - REDIS_ADDR=redis:6380
+
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
+
+      - MINIO_ENDPOINT=minio:9000
+    networks:
+      - POSTGRES
+      - REDIS
+      - TODENNUS
+      - MINIO
+    depends_on:
+      - postgresql
+      - todennus-migration
+
+  todennus-file-service-rpc:
+    container_name: todennus-file-service-rpc
+    image: todennus/file-service:latest
+    command: grpc
+    restart: always
+    ports:
+      - 8086:8080
+    env_file:
+      - ../file-service/.env
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_NODEID=6
+
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
+      - POSTGRES_LOGLEVEL=1
+      - POSTGRES_RETRY_ATTEMPTS=3
+      - POSTGRES_RETRY_INTERVAL=5
+
+      - REDIS_DB=0
+      - REDIS_USERNAME=
+      - REDIS_PASSWORD=
+      - REDIS_ADDR=redis:6380
+
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
+
+      - MINIO_ENDPOINT=minio:9000
+    networks:
+      - POSTGRES
+      - REDIS
+      - TODENNUS
+      - MINIO
+    depends_on:
+      - postgresql
+      - todennus-migration
+
 volumes:
   postgresql:
     name: todennus_postgresql
@@ -258,6 +352,8 @@ volumes:
     name: todennus_pgadmin
   redis:
     name: todennus_redis
+  minio:
+    name: todennus_minio
 
 networks:
   PG_ADMIN:
@@ -268,3 +364,5 @@ networks:
     name: REDIS
   TODENNUS:
     name: TODENNUS
+  MINIO:
+    name: MINIO

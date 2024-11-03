@@ -22,3 +22,7 @@
 	path = oauth2-client-service
 	url = git@github.com:todennus/oauth2-client-service.git
 	branch = dev
+[submodule "file-service"]
+	path = file-service
+	url = git@github.com:todennus/file-service.git
+	branch = dev

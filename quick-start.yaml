@@ -45,8 +45,24 @@ services:
     networks:
       - REDIS
 
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    expose:
+      - 9000
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      - MINIO_ROOT_USER=root
+      - MINIO_ROOT_PASSWORD=123456
+    volumes:
+      - minio:/data
+
   todennus-docs:
     container_name: todennus-docs
+    command: swagger
     image: todennus/docs:latest
     restart: always
     ports:
@@ -162,8 +178,17 @@ services:
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
 
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_CLIENT_ID
+      - SERVICE_CLIENT_SECRET
+      - SERVICE_FILE_GRPC_ADDR=todennus-file-service-rpc:8080
+
       - OAUTH2_TOKEN_RSA_PRIVATE_KEY
       - OAUTH2_TOKEN_HMAC_SECRET_KEY
+
+      - USER_AVATAR_ALLOWED_TYPES
+      - USER_AVATAR_MAX_SIZE
+      - USER_AVATAR_POLICY_TOKEN_EXPIRATION
     networks:
       - POSTGRES
       - REDIS
@@ -198,8 +223,17 @@ services:
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
 
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_CLIENT_ID
+      - SERVICE_CLIENT_SECRET
+      - SERVICE_FILE_GRPC_ADDR=todennus-file-service-rpc:8080
+
       - OAUTH2_TOKEN_RSA_PRIVATE_KEY
       - OAUTH2_TOKEN_HMAC_SECRET_KEY
+
+      - USER_AVATAR_ALLOWED_TYPES
+      - USER_AVATAR_MAX_SIZE
+      - USER_AVATAR_POLICY_TOKEN_EXPIRATION
     networks:
       - POSTGRES
       - REDIS
@@ -218,7 +252,7 @@ services:
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8080
-      - SERVER_NODEID=0
+      - SERVER_NODEID=3
       - SERVER_LOGLEVEL
       - SERVER_REQUEST_TIMEOUT
 
@@ -261,7 +295,7 @@ services:
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8080
-      - SERVER_NODEID=0
+      - SERVER_NODEID=4
       - SERVER_LOGLEVEL
       - SERVER_REQUEST_TIMEOUT
 
@@ -292,6 +326,106 @@ services:
       - postgresql
       - todennus-migration
 
+  todennus-file-service:
+    container_name: todennus-file-service
+    image: todennus/file-service:latest
+    command: rest
+    restart: always
+    ports:
+      - 8085:8080
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_NODEID=5
+      - SERVER_LOGLEVEL
+      - SERVER_REQUEST_TIMEOUT
+
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
+      - POSTGRES_LOGLEVEL=1
+      - POSTGRES_RETRY_ATTEMPTS=3
+      - POSTGRES_RETRY_INTERVAL=5
+
+      - REDIS_DB=0
+      - REDIS_USERNAME=
+      - REDIS_PASSWORD=
+      - REDIS_ADDR=redis:6380
+
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_CLIENT_ID
+      - SERVICE_CLIENT_SECRET
+      - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
+
+      - OAUTH2_TOKEN_RSA_PRIVATE_KEY
+      - OAUTH2_TOKEN_HMAC_SECRET_KEY
+
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY
+      - MINIO_SECRET_KEY
+
+      - FILE_DEFAULT_IMAGE_ALLOWED_TYPES
+      - FILE_DEFAULT_MAX_SIZE
+      - FILE_UPLOAD_SESSION_EXPIRATION
+      - FILE_TEMPORARY_FILE_EXPIRATION
+      - FILE_STORAGE_IMAGE_BUCKET
+      - FILE_STORAGE_TEMPORARY_BUCKET
+    networks:
+      - POSTGRES
+      - REDIS
+      - TODENNUS
+    depends_on:
+      - postgresql
+      - todennus-migration
+
+  todennus-file-service-rpc:
+    container_name: todennus-file-service-rpc
+    image: todennus/file-service:latest
+    command: grpc
+    restart: always
+    ports:
+      - 8086:8080
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_NODEID=6
+      - SERVER_LOGLEVEL
+      - SERVER_REQUEST_TIMEOUT
+
+      - POSTGRES_DSN=postgresql://postgres:postgres@postgresql:5433/todennus?sslmode=disable&connect_timeout=2
+      - POSTGRES_LOGLEVEL=1
+      - POSTGRES_RETRY_ATTEMPTS=3
+      - POSTGRES_RETRY_INTERVAL=5
+
+      - REDIS_DB=0
+      - REDIS_USERNAME=
+      - REDIS_PASSWORD=
+      - REDIS_ADDR=redis:6380
+
+      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
+      - SERVICE_CLIENT_ID
+      - SERVICE_CLIENT_SECRET
+      - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
+
+      - OAUTH2_TOKEN_RSA_PRIVATE_KEY
+      - OAUTH2_TOKEN_HMAC_SECRET_KEY
+
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY
+      - MINIO_SECRET_KEY
+
+      - FILE_DEFAULT_IMAGE_ALLOWED_TYPES
+      - FILE_DEFAULT_MAX_SIZE
+      - FILE_UPLOAD_SESSION_EXPIRATION
+      - FILE_TEMPORARY_FILE_EXPIRATION
+      - FILE_STORAGE_IMAGE_BUCKET
+      - FILE_STORAGE_TEMPORARY_BUCKET
+    networks:
+      - POSTGRES
+      - REDIS
+      - TODENNUS
+    depends_on:
+      - postgresql
+      - todennus-migration
+
 volumes:
   postgresql:
     name: todennus_postgresql
@@ -299,6 +433,8 @@ volumes:
     name: todennus_pgadmin
   redis:
     name: todennus_redis
+  minio:
+    name: todennus_minio
 
 networks:
   PG_ADMIN:
