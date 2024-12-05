@@ -60,6 +60,7 @@ git clone https://github.com/todennus/docs
 git clone https://github.com/todennus/oauth2-service
 git clone https://github.com/todennus/oauth2-client-service
 git clone https://github.com/todennus/user-service
+git clone https://github.com/todennus/file-service
 git clone https://github.com/todennus/idp
 git clone https://github.com/todennus/migration
 git clone https://github.com/todennus/proto
@@ -74,6 +75,7 @@ go work init docs
 go work use oauth2-service
 go work use oauth2-client-service
 go work use user-service
+go work use file-service
 go work use migration
 go work use shared
 go work use proto

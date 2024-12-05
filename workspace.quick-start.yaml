@@ -295,9 +295,6 @@ services:
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
 
-      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
-      - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
-
       - MINIO_ENDPOINT=minio:9000
     networks:
       - POSTGRES
@@ -331,9 +328,6 @@ services:
       - REDIS_USERNAME=
       - REDIS_PASSWORD=
       - REDIS_ADDR=redis:6380
-
-      - SERVICE_OAUTH2_TOKEN_URL=http://todennus-oauth2-service:8080/oauth2/token
-      - SERVICE_USER_GRPC_ADDR=todennus-user-service-rpc:8080
 
       - MINIO_ENDPOINT=minio:9000
     networks:

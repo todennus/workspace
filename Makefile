@@ -4,6 +4,9 @@ docker-build-docs:
 docker-build-user-service:
 	cd user-service && make docker-build
 
+docker-build-file-service:
+	cd file-service && make docker-build
+
 docker-build-oauth2-service:
 	cd oauth2-service && make docker-build
 
@@ -19,6 +22,7 @@ docker-build-idp:
 docker-build-all: \
 	docker-build-docs \
 	docker-build-user-service \
+	docker-build-file-service \
 	docker-build-oauth2-service \
 	docker-build-oauth2-client-service \
 	docker-build-migration \

@@ -10,6 +10,9 @@ docker-build-oauth2-client-service:
 docker-build-user-service:
 	docker build -t todennus/user-service -f ./user-service/build/package/workspace.Dockerfile .
 
+docker-build-file-service:
+	docker build -t todennus/file-service -f ./file-service/build/package/workspace.Dockerfile .
+
 docker-build-idp:
 	cd idp && make docker-build
 
@@ -19,6 +22,7 @@ docker-build-migration:
 docker-build-all: \
 	docker-build-docs \
 	docker-build-user-service \
+	docker-build-file-service \
 	docker-build-oauth2-service \
 	docker-build-oauth2-client-service \
 	docker-build-migration \
